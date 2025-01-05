@@ -1,6 +1,9 @@
 package com.example.delete_products_batchjob.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -15,7 +18,6 @@ import static com.example.delete_products_batchjob.constant.ProductModelConstant
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = PRODUCT_ID, length = FieldLength.PRODUCT_ID)
     private String productId;
     @Column(name = PRODUCT_NAME, length = FieldLength.PRODUCT_NAME, nullable = false)

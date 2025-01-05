@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+
+  delete-products-batchjob-mysql:
+    init: true
+    image: mysql:8.0.26
+    container_name: delete-products-batchjob-mysql
+    env_file:
+      - ./env/docker.env
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  delete-products-batchjob-flyway:
+    init: true
+    image: flyway/flyway
+    container_name: delete-products-batchjob-flyway
+    command: -url='jdbc:mysql://delete-products-batchjob-mysql/delete_product_staging_db?allowPublicKeyRetrieval=true&useSSL=false' -schemas=delete_product_staging_db  -user=admin -password=admin -connectRetries=60 repair migrate
+    volumes:
+      - ./main/resources/db-migration:/flyway/sql
+    depends_on:
+      - delete-products-batchjob-mysql
+    restart: on-failure
+
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  default:
+    name: product-management-service

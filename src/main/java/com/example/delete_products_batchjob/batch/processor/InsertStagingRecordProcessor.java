@@ -4,8 +4,9 @@ import com.example.delete_products_batchjob.constant.StagingStatusEnum;
 import com.example.delete_products_batchjob.dto.StagingRequest;
 import com.example.delete_products_batchjob.model.Product;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.stereotype.Component;
 
-
+@Component
 public class InsertStagingRecordProcessor implements ItemProcessor<Product, StagingRequest> {
 
     @Override

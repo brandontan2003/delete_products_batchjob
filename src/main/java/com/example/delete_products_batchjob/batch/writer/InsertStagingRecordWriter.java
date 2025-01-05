@@ -5,15 +5,18 @@ import com.example.delete_products_batchjob.model.Staging;
 import com.example.delete_products_batchjob.repository.StagingRepository;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-
+@Component
 public class InsertStagingRecordWriter implements ItemWriter<StagingRequest> {
 
-    @Autowired
-    private StagingRepository stagingRepository;
+    private final StagingRepository stagingRepository;
+
+    public InsertStagingRecordWriter(StagingRepository stagingRepository) {
+        this.stagingRepository = stagingRepository;
+    }
 
     @Override
     public void write(Chunk<? extends StagingRequest> chunk) {

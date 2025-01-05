@@ -20,7 +20,7 @@ services:
     container_name: delete-products-batchjob-flyway
     command: -url='jdbc:mysql://delete-products-batchjob-mysql/delete_product_staging_db?allowPublicKeyRetrieval=true&useSSL=false' -schemas=delete_product_staging_db  -user=admin -password=admin -connectRetries=60 repair migrate
     volumes:
-      - ./main/resources/db-migration:/flyway/sql
+      - ./src/main/resources/db-migration:/flyway/sql
     depends_on:
       - delete-products-batchjob-mysql
     restart: on-failure

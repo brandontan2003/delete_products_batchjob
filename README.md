@@ -1,0 +1,1 @@
+# delete_products_batchjob

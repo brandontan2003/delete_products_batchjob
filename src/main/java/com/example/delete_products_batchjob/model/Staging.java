@@ -23,4 +23,6 @@ public class Staging {
     private String status;
     @Column(name = SCHEDULED_DELETION_DATE, nullable = false)
     private LocalDate scheduledDeletionDate;
+    @Column(name = COMPLETION_DATE)
+    private LocalDate completionDate;
 }

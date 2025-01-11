@@ -7,6 +7,7 @@ public class StagingModelConstant {
     public static final String PRODUCT_ID = "product_id";
     public static final String STATUS = "status";
     public static final String SCHEDULED_DELETION_DATE = "scheduled_deletion_date";
+    public static final String COMPLETION_DATE = "completion_date";
 
 
     public static class FieldLength {

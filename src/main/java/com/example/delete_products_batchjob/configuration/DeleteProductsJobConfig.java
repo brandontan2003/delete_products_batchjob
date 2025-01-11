@@ -1,10 +1,15 @@
 package com.example.delete_products_batchjob.configuration;
 
 import com.example.delete_products_batchjob.batch.processor.InsertStagingRecordProcessor;
+import com.example.delete_products_batchjob.batch.processor.ReadRecordFromStagingProcessor;
+import com.example.delete_products_batchjob.batch.writer.DeleteProductsWriter;
 import com.example.delete_products_batchjob.batch.writer.InsertStagingRecordWriter;
+import com.example.delete_products_batchjob.dto.DeleteProductWriterRequest;
 import com.example.delete_products_batchjob.dto.StagingRequest;
 import com.example.delete_products_batchjob.model.Product;
+import com.example.delete_products_batchjob.model.Staging;
 import com.example.delete_products_batchjob.repository.StagingRepository;
+import com.example.delete_products_batchjob.service.ProductService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -23,6 +28,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import static com.example.delete_products_batchjob.constant.DeleteProductJobConstant.*;
 import static com.example.delete_products_batchjob.constant.ProductModelConstant.*;
+import static com.example.delete_products_batchjob.constant.StagingModelConstant.STAGING_ID;
+import static com.example.delete_products_batchjob.constant.StagingModelConstant.STATUS;
 
 @Configuration
 @EnableJpaRepositories("com.example.delete_products_batchjob.repository")
@@ -32,12 +39,20 @@ public class DeleteProductsJobConfig {
     private JdbcTemplate productJdbcTemplate;
 
     @Autowired
+    @Qualifier("stagingJdbcTemplate")
+    private JdbcTemplate stagingJdbcTemplate;
+
+    @Autowired
     private StagingRepository stagingRepository;
 
+    @Autowired
+    private ProductService productService;
+
     @Bean
-    public Job deleteProductsJob(JobRepository jobRepository, Step fetchFromProductTable) {
+    public Job deleteProductsJob(JobRepository jobRepository, Step fetchFromProductTable, Step executeDeletionRequest) {
         return new JobBuilder(DELETE_PRODUCTS_JOB, jobRepository)
                 .start(fetchFromProductTable)
+                .next(executeDeletionRequest)
                 .build();
     }
 
@@ -49,11 +64,6 @@ public class DeleteProductsJobConfig {
                 .processor(insertStagingRecordProcessor())
                 .writer(insertStagingRecordWriter())
                 .build();
-    }
-
-    @Bean
-    public InsertStagingRecordProcessor insertStagingRecordProcessor() {
-        return new InsertStagingRecordProcessor();
     }
 
     @Bean
@@ -75,7 +85,49 @@ public class DeleteProductsJobConfig {
     }
 
     @Bean
+    public InsertStagingRecordProcessor insertStagingRecordProcessor() {
+        return new InsertStagingRecordProcessor();
+    }
+
+    @Bean
     public ItemWriter<StagingRequest> insertStagingRecordWriter() {
         return new InsertStagingRecordWriter(stagingRepository);
+    }
+
+    @Bean
+    public Step executeDeletionRequest(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+        return new StepBuilder(CALL_DELETE_PRODUCT_API, jobRepository)
+                .<Staging, DeleteProductWriterRequest>chunk(CHUCK_SIZE, transactionManager)
+                .reader(readRecordsFromStagingTable())
+                .processor(readRecordsFromStagingProcessor())
+                .writer(deleteProductsWriter())
+                .build();
+    }
+
+    @Bean
+    public JdbcCursorItemReader<Staging> readRecordsFromStagingTable() {
+        return new JdbcCursorItemReaderBuilder<Staging>()
+                .name("stagingReader")
+                .dataSource(stagingJdbcTemplate.getDataSource())
+                .sql(SELECT_RECORDS_FROM_STAGING_SQL)
+                .rowMapper((rs, rowNum) -> {
+                    Staging staging = new Staging();
+                    staging.setStagingId(rs.getString(STAGING_ID));
+                    staging.setProductId(rs.getString(PRODUCT_ID));
+                    staging.setStatus(rs.getString(STATUS));
+                    staging.setScheduledDeletionDate(rs.getDate(SCHEDULED_DELETION_DATE).toLocalDate());
+                    return staging;
+                })
+                .build();
+    }
+
+    @Bean
+    public ReadRecordFromStagingProcessor readRecordsFromStagingProcessor() {
+        return new ReadRecordFromStagingProcessor();
+    }
+
+    @Bean
+    public ItemWriter<DeleteProductWriterRequest> deleteProductsWriter() {
+        return new DeleteProductsWriter(stagingRepository, productService);
     }
 }

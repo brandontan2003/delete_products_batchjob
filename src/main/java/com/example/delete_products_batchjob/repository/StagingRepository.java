@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StagingRepository extends JpaRepository<Staging, String> {
 
+    Staging findByStagingId(String stagingId);
 }

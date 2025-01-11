@@ -4,7 +4,6 @@ import com.example.delete_products_batchjob.batch.processor.InsertStagingRecordP
 import com.example.delete_products_batchjob.batch.writer.InsertStagingRecordWriter;
 import com.example.delete_products_batchjob.dto.StagingRequest;
 import com.example.delete_products_batchjob.model.Product;
-import com.example.delete_products_batchjob.repository.ProductRepository;
 import com.example.delete_products_batchjob.repository.StagingRepository;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -22,7 +21,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import static com.example.delete_products_batchjob.constant.DeleteProductJobConstant.SELECT_PRODUCTS_TOBE_DELETED_SQL;
+import static com.example.delete_products_batchjob.constant.DeleteProductJobConstant.*;
 import static com.example.delete_products_batchjob.constant.ProductModelConstant.*;
 
 @Configuration
@@ -37,15 +36,15 @@ public class DeleteProductsJobConfig {
 
     @Bean
     public Job deleteProductsJob(JobRepository jobRepository, Step fetchFromProductTable) {
-        return new JobBuilder("deleteProductsJob", jobRepository)
+        return new JobBuilder(DELETE_PRODUCTS_JOB, jobRepository)
                 .start(fetchFromProductTable)
                 .build();
     }
 
     @Bean
     public Step fetchFromProductTable(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-        return new StepBuilder("step1", jobRepository)
-                .<Product, StagingRequest>chunk(10, transactionManager)
+        return new StepBuilder(FETCH_PRODUCTS_FOR_DELETION, jobRepository)
+                .<Product, StagingRequest>chunk(CHUCK_SIZE, transactionManager)
                 .reader(readProductToBeDeleted())
                 .processor(insertStagingRecordProcessor())
                 .writer(insertStagingRecordWriter())

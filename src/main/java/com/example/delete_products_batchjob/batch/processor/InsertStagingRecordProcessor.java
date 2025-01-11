@@ -17,6 +17,7 @@ public class InsertStagingRecordProcessor implements ItemProcessor<Product, Stag
     private static StagingRequest getStagingRequest(Product product) {
         StagingRequest stagingRequest = new StagingRequest();
         stagingRequest.setProductId(product.getProductId());
+        stagingRequest.setProductName(product.getProductName());
         stagingRequest.setStatus(StagingStatusEnum.IN_PROGRESS.getValue());
         stagingRequest.setScheduledDeletionDate(product.getScheduledDeletionDate());
         return stagingRequest;

@@ -19,6 +19,8 @@ public class Staging {
     private String stagingId;
     @Column(name = PRODUCT_ID, length = FieldLength.PRODUCT_ID, nullable = false)
     private String productId;
+    @Column(name = PRODUCT_NAME, length = FieldLength.PRODUCT_NAME, nullable = false)
+    private String productName;
     @Column(name = STATUS, length = FieldLength.STATUS, nullable = false)
     private String status;
     @Column(name = SCHEDULED_DELETION_DATE, nullable = false)

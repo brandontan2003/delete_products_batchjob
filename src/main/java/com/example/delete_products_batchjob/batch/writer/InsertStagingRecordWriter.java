@@ -26,6 +26,7 @@ public class InsertStagingRecordWriter implements ItemWriter<StagingRequest> {
         for (StagingRequest request : stagingRequests) {
             Staging staging = new Staging();
             staging.setProductId(request.getProductId());
+            staging.setProductName(request.getProductName());
             staging.setStatus(request.getStatus());
             staging.setScheduledDeletionDate(request.getScheduledDeletionDate());
             stagingRepository.saveAndFlush(staging);

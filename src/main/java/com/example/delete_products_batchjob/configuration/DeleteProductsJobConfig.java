@@ -114,6 +114,7 @@ public class DeleteProductsJobConfig {
                     Staging staging = new Staging();
                     staging.setStagingId(rs.getString(STAGING_ID));
                     staging.setProductId(rs.getString(PRODUCT_ID));
+                    staging.setProductName(rs.getString(PRODUCT_NAME));
                     staging.setStatus(rs.getString(STATUS));
                     staging.setScheduledDeletionDate(rs.getDate(SCHEDULED_DELETION_DATE).toLocalDate());
                     return staging;

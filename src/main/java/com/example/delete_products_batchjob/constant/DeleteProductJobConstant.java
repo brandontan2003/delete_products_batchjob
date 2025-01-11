@@ -12,6 +12,6 @@ public class DeleteProductJobConstant {
             + " scheduled_deletion_date <= now()";
 
     public static final String SELECT_RECORDS_FROM_STAGING_SQL
-            = "SELECT staging_id, product_id, status, scheduled_deletion_date from staging_table where status = "
-            + "'IN_PROGRESS'";
+            = "SELECT staging_id, product_id, product_name, status, scheduled_deletion_date from staging_table where "
+            + "status = 'IN_PROGRESS'";
 }

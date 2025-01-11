@@ -14,6 +14,7 @@ import java.time.LocalDate;
 public class StagingRequest {
 
     private String productId;
+    private String productName;
     private String status;
     private LocalDate scheduledDeletionDate;
 

@@ -1,6 +1,20 @@
 version: "3.7"
 
 services:
+  delete-products-batchjob:
+    init: true
+    build:
+      dockerfile: ./Dockerfile
+    image: delete-products-batchjob:latest
+    env_file:
+      - ./env/docker.env
+    working_dir: /app
+    container_name: delete-products-batchjob
+    depends_on:
+      - delete-products-batchjob-flyway
+    ports:
+      - '8081:8080'
+    restart: on-failure
 
   delete-products-batchjob-mysql:
     init: true

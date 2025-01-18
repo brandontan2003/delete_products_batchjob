@@ -2,20 +2,22 @@ package com.example.delete_products_batchjob.batch.writer;
 
 import com.example.delete_products_batchjob.constant.StagingStatusEnum;
 import com.example.delete_products_batchjob.dto.DeleteProductWriterRequest;
-import com.example.delete_products_batchjob.dto.product.ResponsePayload;
 import com.example.delete_products_batchjob.dto.staging.UpdateStagingRequest;
 import com.example.delete_products_batchjob.model.Staging;
 import com.example.delete_products_batchjob.repository.StagingRepository;
 import com.example.delete_products_batchjob.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Component
+@Slf4j
 public class DeleteProductsWriter implements ItemWriter<DeleteProductWriterRequest> {
 
     private final StagingRepository stagingRepository;
@@ -31,13 +33,14 @@ public class DeleteProductsWriter implements ItemWriter<DeleteProductWriterReque
         List<? extends DeleteProductWriterRequest> writerRequests = chunk.getItems();
 
         for (DeleteProductWriterRequest request : writerRequests) {
-            ResponseEntity<ResponsePayload<String>> response =
-                    productService.deleteProductApi(request.getDeleteProductRequest());
             UpdateStagingRequest updateStagingRequest = request.getUpdateStagingRequest();
-            if (response.getStatusCode().isError()) {
+            try {
+                productService.deleteProductApi(request.getDeleteProductRequest());
+                updateStagingRequest.setStatus(StagingStatusEnum.COMPLETED.getValue());
+            } catch (HttpClientErrorException | HttpServerErrorException ex) {
                 updateStagingRequest.setStatus(StagingStatusEnum.FAILED.getValue());
+                log.error("Exception occurred while calling API :::: {}", ex.getResponseBodyAsString());
             }
-            updateStagingRequest.setStatus(StagingStatusEnum.COMPLETED.getValue());
             updateStagingRecord(updateStagingRequest);
         }
     }

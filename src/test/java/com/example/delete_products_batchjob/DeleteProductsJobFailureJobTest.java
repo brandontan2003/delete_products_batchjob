@@ -6,10 +6,9 @@ import com.example.delete_products_batchjob.model.Product;
 import com.example.delete_products_batchjob.model.Staging;
 import com.example.delete_products_batchjob.repository.ProductRepository;
 import com.example.delete_products_batchjob.repository.StagingRepository;
-import org.junit.jupiter.api.*;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.Header;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
@@ -25,8 +24,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
 @ComponentScan(basePackages = "com.example.delete_products_batchjob")
 @SpringBootTest(classes = {FlywayTestConfig.class})

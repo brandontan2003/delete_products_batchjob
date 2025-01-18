@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -63,6 +64,10 @@ public class DeleteProductsJobConfig {
                 .reader(readProductToBeDeleted())
                 .processor(insertStagingRecordProcessor())
                 .writer(insertStagingRecordWriter())
+                .faultTolerant()
+                .retry(RecoverableDataAccessException.class)
+                .retryLimit(RETRY_LIMIT)
+                .skipLimit(SKIP_LIMIT)
                 .build();
     }
 
@@ -101,6 +106,10 @@ public class DeleteProductsJobConfig {
                 .reader(readRecordsFromStagingTable())
                 .processor(readRecordsFromStagingProcessor())
                 .writer(deleteProductsWriter())
+                .faultTolerant()
+                .retry(RecoverableDataAccessException.class)
+                .retryLimit(RETRY_LIMIT)
+                .skipLimit(SKIP_LIMIT)
                 .build();
     }
 

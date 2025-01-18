@@ -6,9 +6,10 @@ import com.example.delete_products_batchjob.model.Product;
 import com.example.delete_products_batchjob.model.Staging;
 import com.example.delete_products_batchjob.repository.ProductRepository;
 import com.example.delete_products_batchjob.repository.StagingRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
@@ -27,6 +28,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockserver.model.HttpRequest.request;
@@ -48,15 +50,10 @@ class DeleteProductsJobTest {
     @Autowired
     private StagingRepository stagingRepository;
 
-    private final MockServerClient mockServerClient = new MockServerClient("localhost", 1011);
+    private static final MockServerClient mockServerClient = new MockServerClient("localhost", 1011);
 
-    private static final String VALID_PRODUCT1_ID = UUID.randomUUID().toString();
-    private static final String VALID_PRODUCT2_ID = UUID.randomUUID().toString();
-    private static final String VALID_PRODUCT3_ID = UUID.randomUUID().toString();
-    private static final String INVALID_PRODUCT1_ID = UUID.randomUUID().toString();
-
-    @BeforeEach
-    public void before() throws IOException {
+    @BeforeAll
+    static void before() {
         // Start MockServer
         ClientAndServer mockServer = ClientAndServer.startClientAndServer(1011);
 
@@ -72,8 +69,8 @@ class DeleteProductsJobTest {
         );
     }
 
-    @AfterEach
-    public void tearDown() throws IOException {
+    @AfterAll
+    static void tearDown() {
         mockServerClient.close();
     }
 
@@ -92,9 +89,9 @@ class DeleteProductsJobTest {
     private final JobParameters DEFAULT_JOB_PARAMETERS = new JobParametersBuilder().addLong("startTime",
             System.currentTimeMillis()).toJobParameters();
 
-    private static Product buildProduct(String productId, LocalDate deletionDate) {
+    private static Product buildProduct(LocalDate deletionDate) {
         Product product = new Product();
-        product.setProductId(productId);
+        product.setProductId(UUID.randomUUID().toString());
         product.setProductName("Sample Product");
         product.setPrice(BigDecimal.valueOf(99));
         product.setScheduledDeletionDate(deletionDate);
@@ -107,56 +104,33 @@ class DeleteProductsJobTest {
         assertEquals(ExitStatus.COMPLETED, jobExecution.getExitStatus());
     }
 
-    private void saveProducts() {
-        List<Product> products = new ArrayList<>();
-        products.add(buildProduct(VALID_PRODUCT1_ID, LocalDate.now()));
-        products.add(buildProduct(VALID_PRODUCT2_ID, LocalDate.now().minusDays(1)));
-        products.add(buildProduct(VALID_PRODUCT3_ID, LocalDate.now().minusDays(10)));
-        products.add(buildProduct(INVALID_PRODUCT1_ID, LocalDate.now().plusDays(1)));
-
-        products.forEach(product -> productRepository.save(product));
+    static Stream<Arguments> testDeleteProductBatch_withValidRecord() {
+        return Stream.of(
+                Arguments.of("DeletionDate of product is today", buildProduct(LocalDate.now())),
+                Arguments.of("DeletionDate of product is yesterday", buildProduct(LocalDate.now().minusDays(1))),
+                Arguments.of("DeletionDate of product is 10 days ago", buildProduct(LocalDate.now().minusDays(10)))
+        );
     }
 
-    @Test
-    void testDeleteProductBatch_WithValidRecord_Success() throws JobInstanceAlreadyCompleteException,
+    @ParameterizedTest
+    @MethodSource("testDeleteProductBatch_withValidRecord")
+    void testDeleteProductBatch_WithValidRecord_Success(String name, Product buildProduct) throws JobInstanceAlreadyCompleteException,
             JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
-        saveProducts();
-        assertEquals(4, productRepository.count());
+        Product product = productRepository.save(buildProduct);
+        assertEquals(1, productRepository.count());
         assertEquals(0, stagingRepository.count());
 
         JobExecution jobExecution = jobLauncher.run(job, DEFAULT_JOB_PARAMETERS);
         assertEquals(ExitStatus.COMPLETED, jobExecution.getExitStatus());
 
-        assertEquals(3, stagingRepository.count());
+        assertEquals(1, stagingRepository.count());
 
-        assertProductScheduledForTodayDeletion();
-        assertProductScheduledForYesterdayDeletion();
-        assertProductScheduledFor10DaysAgoDeletion();
-    }
-
-    private void assertProductScheduledForTodayDeletion() {
-        Product product = productRepository.findByProductId(VALID_PRODUCT1_ID);
-        Staging staging = stagingRepository.findByProductId(VALID_PRODUCT1_ID);
-        assertProduct(staging, product);
-    }
-
-    private void assertProductScheduledForYesterdayDeletion() {
-        Product product = productRepository.findByProductId(VALID_PRODUCT2_ID);
-        Staging staging = stagingRepository.findByProductId(VALID_PRODUCT2_ID);
-        assertProduct(staging, product);
-    }
-
-    private void assertProductScheduledFor10DaysAgoDeletion() {
-        Product product = productRepository.findByProductId(VALID_PRODUCT3_ID);
-        Staging staging = stagingRepository.findByProductId(VALID_PRODUCT3_ID);
-        assertProduct(staging, product);
-    }
-
-    private void assertProduct(Staging staging, Product product) {
+        Staging staging = stagingRepository.findAll().get(0);
         assertEquals(staging.getProductId(), product.getProductId());
         assertEquals(staging.getProductName(), product.getProductName());
         assertEquals(staging.getScheduledDeletionDate(), product.getScheduledDeletionDate());
         assertEquals(StagingStatusEnum.COMPLETED.toString(), staging.getStatus());
         assertEquals(LocalDate.now(), staging.getCompletionDate());
     }
+
 }

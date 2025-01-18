@@ -34,6 +34,9 @@ dependencies {
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
 
+	// https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+	implementation 'org.slf4j:slf4j-api:2.0.16'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.batch:spring-batch-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -43,6 +46,12 @@ dependencies {
 	testImplementation 'org.flywaydb:flyway-core:11.1.1'
 	testImplementation 'junit:junit:4.13.1'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// https://mvnrepository.com/artifact/org.mock-server/mockserver-netty-no-dependencies
+	testImplementation 'org.mock-server:mockserver-netty-no-dependencies:5.15.0'
+	// https://mvnrepository.com/artifact/org.mock-server/mockserver-client-java-no-dependencies
+	implementation 'org.mock-server:mockserver-client-java-no-dependencies:5.15.0'
+
 
 }
 

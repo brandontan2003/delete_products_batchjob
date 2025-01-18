@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface StagingRepository extends JpaRepository<Staging, String> {
 
     Staging findByStagingId(String stagingId);
+    Staging findByProductId(String productId);
+
 }

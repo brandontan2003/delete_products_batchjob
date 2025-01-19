@@ -35,7 +35,9 @@ Before you begin, ensure that you have the following tools and services installe
    ```bash
    docker --version
    ```
-3. **Product Management Service**  
+3. **Product Common Core**  
+   This library contains shared logic, exception handlers, and other core utilities used across the microservices and batch jobs. You can find the repository for the Product Common Core [here](https://github.com/brandontan2003/product_common_core).
+4. **Product Management Service**  
    This microservice is required for the batch job to make the API calls. You can find the repository for the Product Management Service [here](https://github.com/brandontan2003/product_management_service).
 ---
 

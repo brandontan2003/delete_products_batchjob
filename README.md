@@ -27,7 +27,7 @@ It ensures data consistency and improves system performance by removing redundan
 ## Pre-requisites
 Before you begin, ensure that you have the following tools and services installed:
 1. **Java**  
-   Ensure that you have **Java 8+** installed on your system. You can verify this by running:
+   Ensure that you have **Java 17** installed on your system. You can verify this by running:
    ```bash
    java -version
    ```

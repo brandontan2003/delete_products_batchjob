@@ -18,9 +18,4 @@ public class ApplicationConfig {
         return new EntityManagerFactoryBuilder(jpaVendorAdapter, new HashMap<>(), null);
     }
 
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-
 }

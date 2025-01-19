@@ -1,20 +1,20 @@
 package com.example.delete_products_batchjob.service;
 
 import com.example.delete_products_batchjob.dto.product.DeleteProductRequest;
-import com.example.delete_products_batchjob.dto.product.ResponsePayload;
 import com.example.delete_products_batchjob.service.endpoint.ProductServiceEndpointProperties;
+import com.example.product_common_core.dto.ResponsePayload;
+import com.example.product_common_core.service.RestCallService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 public class ProductService {
 
     @Autowired
-    private RestTemplate restTemplate;
-
+    private RestCallService restCallService;
     @Autowired
     private ProductServiceEndpointProperties endpointProperties;
 
@@ -22,25 +22,9 @@ public class ProductService {
             new ParameterizedTypeReference<>() {
             };
 
-
-    public <T> ResponseEntity<T> callApi(String url, HttpMethod method, Object requestBody,
-                         ParameterizedTypeReference<T> responseType) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Object> requestEntity = new HttpEntity<>(requestBody, headers);
-
-        return restTemplate.exchange(
-                url,
-                method,
-                requestEntity,
-                responseType
-        );
-    }
-
     public ResponseEntity<ResponsePayload<String>> deleteProductApi(DeleteProductRequest request) {
-        return callApi(endpointProperties.getDeleteProductEndpoint(), HttpMethod.DELETE, request,
-                DELETE_PRODUCT_TYPE_REFERENCE);
+        return restCallService.fetchApiResponseEntity(endpointProperties.getDeleteProductEndpoint(),
+                HttpMethod.DELETE, request, DELETE_PRODUCT_TYPE_REFERENCE);
     }
 
 }

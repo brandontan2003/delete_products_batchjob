@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = "com.example.delete_products_batchjob")
+@ComponentScan(basePackages = {"com.example.delete_products_batchjob", "com.example.product_common_core"})
 public class DeleteProductsBatchjobApplication {
 
 	public static void main(String[] args) {
